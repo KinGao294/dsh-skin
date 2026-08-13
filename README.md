@@ -1,0 +1,140 @@
+# dsh-skin
+
+Skin switcher + custom wallpaper for DeepSeek Harness — a "change the skin"
+feature in the spirit of Codex themes. It registers a curated catalog of
+palettes into DSH's built-in theme runtime and adds two rows to
+**Settings → General** (below the built-in Appearance row):
+
+- **皮肤 / Skins** — pick one of 7 curated palettes (or **默认 / Default** to
+  follow the built-in appearance).
+- **背景图片 / Wallpaper** — set your own background image with opacity and
+  blur controls.
+
+Both choices persist across reloads (localStorage).
+
+## How it works
+
+DSH's theme system is token-based: the web shell ships `--dsw-*` design tokens,
+and `ThemeRuntime` lets third-party plugins register themes that override the
+alias layer (`--dsw-alias-*`) per color scheme. This package is a regular
+dual-face plugin:
+
+- **Host half** (`lib/index.js`) — a `dsh.bundle` patch layer that inserts one
+  loader entry (`skin`); a no-op `apply`, exactly like the shipped ui-* packages.
+- **Browser half** (`lib/client.js`) — a `dsh.client` bundle (served at
+  `/plugins/dsh-skin/client.js`) that:
+  1. registers 7 curated skins via `ctx.theme.register(...)`;
+  2. restores the saved skin id and applies it with `ctx.theme.setTheme(...)`;
+  3. renders the wallpaper as a fixed backdrop layer (`z-index: -1`) and stacks
+     a token override (`ctx.theme.overrideTokens`) that makes the main canvas
+     (`--dsw-alias-bg-base`) and sidebar (`--dsw-specific-sidebar-fill`)
+     translucent, so the image shows through while inner surfaces (cards,
+     inputs, bubbles) stay opaque and readable;
+  4. keeps the slot stores in sync with `theme/change` (and re-shades the
+     wallpaper when the active skin or light/dark scheme changes);
+  5. mounts both rows into `settings.general.item`.
+
+Each skin sets its `colorScheme` (`light`/`dark`), which drives
+`body[data-ds-dark-theme]`, plus alias-token overrides applied as inline custom
+properties on `<body>` by ui-layout's ThemePresenter.
+
+## Skins
+
+| id        | scheme | vibe                              |
+|-----------|--------|-----------------------------------|
+| `ocean`   | dark   | DeepSeek-blue deep sea            |
+| `graphite`| dark   | neutral monochrome                |
+| `forest`  | dark   | green calm                        |
+| `sunset`  | dark   | warm purple                       |
+| `midnight`| dark   | pure black OLED                   |
+| `paper`   | light  | warm paper                        |
+| `sakura`  | light  | pink accents                      |
+
+Picking **默认 / Default** reverts to the built-in appearance (follow system)
+and clears the stored skin.
+
+## Wallpaper
+
+In **Settings → General → 背景图片 / Wallpaper**:
+
+- **选择图片 / Choose image** — pick a local image (≤ 2MB, stored as a data
+  URL, kept in this browser only).
+- **透明度 / Opacity** and **模糊 / Blur** sliders tune how the image sits
+  behind the UI.
+- **移除图片 / Remove** clears it.
+
+The wallpaper lives on a `z-index: -1` fixed layer, so it is only visible
+through the translucent main canvas and sidebar; message surfaces keep their
+solid backgrounds for readability. It also follows your active skin's tint
+(switching skins re-shades the translucent surfaces).
+
+## Persistence
+
+Choices are stored in `localStorage` (`dsh-skin:skin`, `dsh-skin:wallpaper`,
+`dsh-skin:wallpaper-opacity`, `dsh-skin:wallpaper-blur`).
+DSH's Host settings wire only exposes an allowlisted set of namespaces to
+browser clients (`WEB_SETTINGS_NAMESPACES` in `dsh-host-apiproxy`), so a
+third-party namespace would answer `settings-not-exposed`; the product itself
+keeps remote browser preferences process-local, and localStorage matches that
+boundary for a visual preference while surviving reloads on the same origin.
+
+## Install
+
+From anywhere, add the package to the `web` profile:
+
+```sh
+dsh plugin --profile web add -w /path/to/dsh-skin
+```
+
+> The `-w` flag is required: every profile ships a `pnpm-workspace.yaml`, so
+> pnpm 9 treats the profile directory as a workspace root and refuses a bare
+> `add` with `ERR_PNPM_ADDING_TO_ROOT`.
+
+This runs pnpm in `~/.dsh/profiles/web`, installs the package, and appends it
+to `dsh.profile.bundles` (its patch layer inserts the `skin` loader entry).
+The running web server must be restarted to pick up the new bundle layer:
+
+```sh
+# stop the running instance, then:
+dsh web
+```
+
+Open **Settings → General** to use both features.
+
+## Publishing (npm)
+
+DSH (rc.6) has **no separate plugin marketplace** — the plugin distribution
+channel *is* the npm registry. A package that declares `dsh.bundle` (host patch
+layer) and `dsh.client` (browser bundle) is exactly what `dsh plugin
+--profile <name> add <package>` installs, so publishing this package to npm is
+what "上架" means today:
+
+1. Pick a unique name (scoped names are safer, e.g. `@yourscope/dsh-skin`) and
+   fill in `author`, `repository`, `keywords`, and a CHANGELOG.
+2. Make sure `files` ships `lib/index.js`, `lib/client.js`, `lib/types`,
+   `cordis.patch.yml` (already configured).
+3. Publish to the **official npm registry** (this machine's default registry is
+   a mirror — publishing to a mirror does not reach npmjs):
+   ```sh
+   npm publish --registry https://registry.npmjs.org
+   ```
+4. Users install with:
+   ```sh
+   dsh plugin --profile web add -w @yourscope/dsh-skin
+   ```
+   then restart `dsh web`.
+
+Known platform boundaries to document for users: browser-side preferences are
+stored in localStorage (third-party settings namespaces are not exposed over
+the wire yet), and the client bundle may only `require` module-table entities
+(platform seeds + registered client bundles).
+
+## Development
+
+The client bundle is written directly in the `__ModuleLoader__` bundle format
+(the same shape tsdown emits for the shipped `ui-*` packages), so no build step
+is required. `lib/client.js` may `require` only module-table entities: platform
+seed words (`react`, `react/jsx-runtime`, …) and registered client bundles
+(`@deepseek-ai/dsh-client-runtime/client`, `@deepseek-ai/dsh-client-ui-theme/client`,
+…). After editing, restart the web server (bundle content is re-hashed and
+served with a new `rev`; loader entries are rescanned at boot).

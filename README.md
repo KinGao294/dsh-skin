@@ -7,10 +7,11 @@ palettes into DSH's built-in theme runtime and adds two rows to
 
 - **皮肤 / Skins** — pick one of 7 curated palettes (or **默认 / Default** to
   follow the built-in appearance).
-- **背景图片 / Wallpaper** — set your own background image with opacity and
-  blur controls.
+- **背景图片 / Wallpaper** — local image, or paste an image/video URL; opacity,
+  blur, and fit (cover / contain / stretch / tile).
 
-Both choices persist across reloads (localStorage).
+Both choices persist across reloads (localStorage). A saved third-party skin is
+re-applied once on boot (DSH only persists system/light/dark itself).
 
 ## How it works
 
@@ -60,10 +61,11 @@ and clears the stored skin.
 In **Settings → General → 背景图片 / Wallpaper**:
 
 - **选择图片 / Choose image** — pick a local image (≤ 2MB, stored as a data
-  URL, kept in this browser only).
-- **透明度 / Opacity** and **模糊 / Blur** sliders tune how the image sits
-  behind the UI. Slider drags no longer crash (theme/change from token overrides is ignored unless the active skin or scheme actually changed).
-- **移除图片 / Remove** clears it.
+  URL, kept in this browser only). Local video files are not uploaded; paste a URL instead.
+- **网址 / URL** — paste http(s) / data / blob image or video (mp4/webm/ogv/mov). No extra media server.
+- **显示方式 / Fit** — cover / contain / stretch / tile.
+- **透明度 / Opacity** and **模糊 / Blur** sliders (rAF-coalesced; no crash).
+- **移除 / Remove** clears it.
 
 The wallpaper lives on a `z-index: -1` fixed layer, so it is only visible
 through the translucent main canvas and sidebar; message surfaces keep their
@@ -73,7 +75,7 @@ solid backgrounds for readability. It also follows your active skin's tint
 ## Persistence
 
 Choices are stored in `localStorage` (`dsh-skin:skin`, `dsh-skin:wallpaper`,
-`dsh-skin:wallpaper-opacity`, `dsh-skin:wallpaper-blur`).
+`dsh-skin:wallpaper-opacity`, `dsh-skin:wallpaper-blur`, `dsh-skin:wallpaper-fit`).
 DSH's Host settings wire only exposes an allowlisted set of namespaces to
 browser clients (`WEB_SETTINGS_NAMESPACES` in `dsh-host-apiproxy`), so a
 third-party namespace would answer `settings-not-exposed`; the product itself

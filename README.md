@@ -62,9 +62,9 @@ In **Settings → General → 背景图片 / Wallpaper**:
 
 - **选择图片 / Choose image** — pick a local image (≤ 2MB, stored as a data
   URL, kept in this browser only). Local video files are not uploaded; paste a URL instead.
-- **网址 / URL** — paste http(s) / data / blob image or video (mp4/webm/ogv/mov). No extra media server.
+- **网址 / URL** — paste http(s) / data image or video (mp4/webm/ogv/mov). blob is rejected (dies on reload). No extra media server.
 - **显示方式 / Fit** — cover / contain / stretch / tile.
-- **透明度 / Opacity** and **模糊 / Blur** sliders (rAF-coalesced; no crash).
+- **界面遮罩 / UI wash** and **模糊 / Blur** sliders (rAF-coalesced; no crash). Higher wash = more solid UI.
 - **移除 / Remove** clears it.
 
 The wallpaper lives on a `z-index: -1` fixed layer, so it is only visible

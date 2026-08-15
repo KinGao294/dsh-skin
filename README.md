@@ -42,13 +42,15 @@ properties on `<body>` by ui-layout's ThemePresenter.
 
 | id        | scheme | vibe                              |
 |-----------|--------|-----------------------------------|
-| `ocean`   | dark   | DeepSeek-blue deep sea            |
-| `graphite`| dark   | neutral monochrome                |
-| `forest`  | dark   | green calm                        |
-| `sunset`  | dark   | warm purple                       |
-| `midnight`| dark   | pure black OLED                   |
-| `paper`   | light  | warm paper                        |
-| `sakura`  | light  | pink accents                      |
+| `skin-ocean` | dark   | DeepSeek-blue deep sea            |
+| `skin-graphite`| dark   | neutral monochrome                |
+| `skin-forest` | dark   | green calm                        |
+| `skin-sunset` | dark   | warm purple                       |
+| `skin-midnight`| dark   | pure black OLED                   |
+| `skin-paper` | light  | warm paper                        |
+| `skin-sakura` | light  | pink accents                      |
+
+Ids are namespaced (`skin-*`) so they do not collide with official `@deepseek-ai/dsh-client-ui-console` themes (`sakura`, `graphite`). Saved unprefixed ids are migrated on read.
 
 Picking **默认 / Default** reverts to the built-in appearance (follow system)
 and clears the stored skin.
@@ -60,7 +62,7 @@ In **Settings → General → 背景图片 / Wallpaper**:
 - **选择图片 / Choose image** — pick a local image (≤ 2MB, stored as a data
   URL, kept in this browser only).
 - **透明度 / Opacity** and **模糊 / Blur** sliders tune how the image sits
-  behind the UI.
+  behind the UI. Slider drags no longer crash (theme/change from token overrides is ignored unless the active skin or scheme actually changed).
 - **移除图片 / Remove** clears it.
 
 The wallpaper lives on a `z-index: -1` fixed layer, so it is only visible

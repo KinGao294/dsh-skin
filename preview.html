@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>dsh-skin · 奶龙桌宠表情包预览</title>
+<style>
+  body { margin: 0; padding: 32px; background: #141419; color: #e8e8ee;
+         font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 6px; }
+  p  { font-size: 13px; color: #9d9daa; margin: 0 0 24px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 150px); gap: 16px; }
+  .cell { background: #1c1c23; border: 1px solid rgba(255,255,255,.08);
+          border-radius: 14px; padding: 14px; text-align: center; }
+  .cell img { width: 120px; height: 120px; display: block; margin: 0 auto 10px;
+              filter: drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
+  .cell .name { font-size: 13px; color: #e8e8ee; }
+  .cell .id   { font-size: 11px; color: #7c7c88; margin-top: 2px; }
+</style>
+</head>
+<body>
+<h1>🐉 奶龙桌宠 · 表情包（原创 SVG）</h1>
+<p>dsh-skin 插件新增模块预览 —— 每张表情都是内联 SVG，零依赖、任意尺寸清晰。</p>
+<div class="grid" id="grid"></div>
+
+<script>
+// Minimal ModuleLoader shim: load the real client bundle, keep its exports.
+window.__ModuleLoader__ = {
+  load(spec) {
+    const require = (name) => {
+      if (name === "react/jsx-runtime") return { jsx(){}, jsxs(){}, Fragment(){} };
+      if (name === "react") return { useRef: () => ({}), useState: (v) => [v, () => {}] };
+      if (name === "@deepseek-ai/dsh-client-runtime/client") return { defineStore: (d) => d };
+      throw new Error("no stub for " + name);
+    };
+    window.DSH_SKIN = spec.factory(require);
+  }
+};
+</script>
+<script src="./lib/client.js"></script>
+<script>
+  const moods = ["idle", "happy", "thinking", "working", "done", "sad", "surprised", "sleeping"];
+  const labels = { idle: "待机", happy: "开心", thinking: "思考", working: "干活",
+                   done: "完成", sad: "委屈", surprised: "惊讶", sleeping: "睡觉" };
+  const grid = document.getElementById("grid");
+  for (const mood of moods) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    const img = document.createElement("img");
+    img.src = "data:image/svg+xml;utf8," + encodeURIComponent(window.DSH_SKIN.dragonSvg(mood));
+    img.alt = mood;
+    const name = document.createElement("div");
+    name.className = "name";
+    name.textContent = labels[mood] || mood;
+    const id = document.createElement("div");
+    id.className = "id";
+    id.textContent = mood;
+    cell.appendChild(img); cell.appendChild(name); cell.appendChild(id);
+    grid.appendChild(cell);
+  }
+</script>
+</body>
+</html>

@@ -1,14 +1,21 @@
 # dsh-skin
 
-Skin switcher + custom wallpaper for DeepSeek Harness — a "change the skin"
-feature in the spirit of Codex themes. It registers a curated catalog of
-palettes into DSH's built-in theme runtime and adds two rows to
-**Settings → General** (below the built-in Appearance row):
+Skin switcher + custom wallpaper + **奶龙桌宠（desktop pet with sticker pack）**
+for DeepSeek Harness — a "change the skin" feature in the spirit of Codex
+themes. It registers a curated catalog of palettes into DSH's built-in theme
+runtime and adds three rows to **Settings → General** (below the built-in
+Appearance row):
 
 - **皮肤 / Skins** — pick one of 7 curated palettes (or **默认 / Default** to
   follow the built-in appearance).
 - **背景图片 / Wallpaper** — local image, or paste an image/video URL; opacity,
   blur, and fit (cover / contain / stretch / tile).
+- **奶龙桌宠 / Pet** — a floating, draggable yellow-dragon desktop pet with an
+  8-mood sticker pack (表情包). It follows the agent's running state
+  (idle → thinking → working → done → sleeping), blinks while idle, falls
+  asleep when idle too long, can be dragged anywhere (position remembered),
+  and shows a 🎨 sticker panel where you can pick any mood manually. Toggle it,
+  resize it, or reset its position from the settings row.
 
 Both choices persist across reloads (localStorage). A saved third-party skin is
 re-applied once on boot (DSH only persists system/light/dark itself).
@@ -33,7 +40,10 @@ dual-face plugin:
      inputs, bubbles) stay opaque and readable;
   4. keeps the slot stores in sync with `theme/change` (and re-shades the
      wallpaper when the active skin or light/dark scheme changes);
-  5. mounts both rows into `settings.general.item`.
+  5. mounts both rows into `settings.general.item`;
+  6. mounts the desktop pet (a fixed, draggable element with inline-SVG
+     stickers) and watches the agent's running state through
+     `ctx.get("sessions").list()` to switch moods.
 
 Each skin sets its `colorScheme` (`light`/`dark`), which drives
 `body[data-ds-dark-theme]`, plus alias-token overrides applied as inline custom
@@ -58,9 +68,7 @@ and clears the stored skin.
 
 ## Wallpaper
 
-In **Settings → General → 背景图片 / Wallpaper**:
-
-- **选择图片 / Choose image** — pick a local image (≤ 2MB, stored as a data
+In **Settings → General → 背景图片 / Wallpaper**:- **选择图片 / Choose image** — pick a local image (≤ 2MB, stored as a data
   URL, kept in this browser only). Local video files are not uploaded; paste a URL instead.
 - **网址 / URL** — paste http(s) / data image or video (mp4/webm/ogv/mov). blob is rejected (dies on reload). No extra media server.
 - **显示方式 / Fit** — cover / contain / stretch / tile.
@@ -72,10 +80,28 @@ through the translucent main canvas and sidebar; message surfaces keep their
 solid backgrounds for readability. It also follows your active skin's tint
 (switching skins re-shades the translucent surfaces).
 
+## 奶龙桌宠 / Pet
+
+In **Settings → General → 奶龙桌宠 / Pet** you can show/hide the pet, resize it
+(64–180 px) and reset its position. Behavior:
+
+- **Status moods** — the dragon follows the agent: `thinking` when a turn
+  starts, `working` while it runs, `done` (with sparkles) when it finishes,
+  then back to `idle`. Left idle too long it falls asleep (`sleeping`, Zzz).
+- **Sticker pack (表情包)** — hover the pet and open 🎨: 8 moods to pick
+  (idle / happy / thinking / working / done / sad / surprised / sleeping).
+  Clicking the pet also cycles to a random sticker for a few seconds.
+- **Draggable** — drag it anywhere; the position is remembered
+  (`dsh-skin:pet-pos`). Reset it from the settings row.
+- **Zero assets** — every sticker is inline SVG (original hand-drawn art in a
+  Nai-Long style, not the licensed character), so the bundle stays dependency-
+  free and crisp at any size. `preview.html` in the repo shows the full pack.
+
 ## Persistence
 
 Choices are stored in `localStorage` (`dsh-skin:skin`, `dsh-skin:wallpaper`,
-`dsh-skin:wallpaper-opacity`, `dsh-skin:wallpaper-blur`, `dsh-skin:wallpaper-fit`).
+`dsh-skin:wallpaper-opacity`, `dsh-skin:wallpaper-blur`, `dsh-skin:wallpaper-fit`,
+`dsh-skin:pet-enabled`, `dsh-skin:pet-size`, `dsh-skin:pet-pos`).
 DSH's Host settings wire only exposes an allowlisted set of namespaces to
 browser clients (`WEB_SETTINGS_NAMESPACES` in `dsh-host-apiproxy`), so a
 third-party namespace would answer `settings-not-exposed`; the product itself
@@ -103,7 +129,7 @@ The running web server must be restarted to pick up the new bundle layer:
 dsh web
 ```
 
-Open **Settings → General** to use both features.
+Open **Settings → General** to use the skins, wallpaper and pet.
 
 ## Publishing (npm)
 

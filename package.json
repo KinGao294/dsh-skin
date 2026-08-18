@@ -1,6 +1,6 @@
 {
   "name": "dsh-skin",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Skin switcher + custom wallpaper for DeepSeek Harness: curated --dsw-alias-* palettes, translucent wallpaper with opacity/blur controls, and durable per-user persistence (like Codex themes)",
   "license": "MIT",
   "author": "KinGao294",
@@ -16,7 +16,14 @@
     "theme",
     "skin",
     "wallpaper",
-    "web-ui"
+    "web-ui",
+    "pet",
+    "desktop-pet",
+    "sticker",
+    "nailong",
+    "奶龙",
+    "桌宠",
+    "表情包"
   ],
   "type": "module",
   "main": "lib/index.js",

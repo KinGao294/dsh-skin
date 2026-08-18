@@ -108,6 +108,15 @@ third-party namespace would answer `settings-not-exposed`; the product itself
 keeps remote browser preferences process-local, and localStorage matches that
 boundary for a visual preference while surviving reloads on the same origin.
 
+The saved third-party skin is re-applied at boot: once immediately, once on the
+next ticks, and then for a short grace window (4 s) every time the official
+theme runtime falls back onto a built-in preference (`system` / `light` /
+`dark`). The official runtime re-adopts its host-persisted appearance
+asynchronously when its settings scope loads, which can land after the fixed
+ticks and would otherwise drop the saved skin on every restart. Picking
+**默认 / Default** clears the stored skin, so the grace window stops fighting
+immediately.
+
 ## Install
 
 From anywhere, add the package to the `web` profile:
